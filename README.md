@@ -341,44 +341,42 @@ f(x)
 **`hill_climb`: the search**
 
 - **L4** `hill_climb(f, x, step=0.1, iters=1000)` takes the function, the start point, the distance to a neighbour, and a safety limit on the number of moves.
-- **L5** Docstring.
-- **L6** `for i in range(iters):` makes at most `iters` moves. `i` counts the moves made so far.
-- **L7** `best = max((x - step, x + step), key=f)` picks whichever of the two neighbours has the larger `f` value. `key=f` tells `max` to compare the points by `f(point)` rather than by the numbers themselves.
-- **L8-9** If even the better neighbour is not higher than the current point, we are on a peak (or a plateau), so return the point, its height and the number of moves `i`. The `<=` matters: with `<`, the search could step back and forth forever on flat ground.
-- **L10** `x = best` moves uphill.
-- **L11** This line runs only if all `iters` moves were used without finding a peak. It returns `iters` as the move count, which the main program uses to print a warning.
+- **L5** `for i in range(iters):` makes at most `iters` moves. `i` counts the moves made so far.
+- **L6** `best = max((x - step, x + step), key=f)` picks whichever of the two neighbours has the larger `f` value. `key=f` tells `max` to compare the points by `f(point)` rather than by the numbers themselves.
+- **L7-8** If even the better neighbour is not higher than the current point, we are on a peak (or a plateau), so return the point, its height and the number of moves `i`. The `<=` matters: with `<`, the search could step back and forth forever on flat ground.
+- **L9** `x = best` moves uphill.
+- **L10** This line runs only if all `iters` moves were used without finding a peak. It returns `iters` as the move count, which the main program uses to print a warning.
 
 **`make_function`: text to function**
 
-- **L14** `make_function(expr)` takes the text you typed, such as `'sin(x) + x/5'`, and returns a real Python function of `x`.
-- **L15** Docstring.
-- **L16**
+- **L13** `make_function(expr)` takes the text you typed, such as `'sin(x) + x/5'`, and returns a real Python function of `x`.
+- **L14**
   - `expr.replace('^', '**')` lets you write `x^2`. In Python, `^` means something else (bitwise XOR), and `**` is the power operator.
   - `compile(..., 'eval')` checks the text and turns it into code **once**, so it doesn't have to be re-read on every step. A typing mistake like `x +* 2` fails here with a `SyntaxError`.
-- **L17** `vars(math)` is a dictionary of everything in the `math` module. The comprehension keeps every name that doesn't start with `_` (`sin`, `exp`, `pi`, ...).
-- **L18** Comment. Only maths names and `x` are visible to your expression. This is not a security sandbox, so only type expressions you trust.
-- **L19** Returns a `lambda`: a small unnamed function. Each time it is called with a number `x`, `eval` runs the compiled code.
+- **L15** `vars(math)` is a dictionary of everything in the `math` module. The comprehension keeps every name that doesn't start with `_` (`sin`, `exp`, `pi`, ...).
+- **L16** Returns a `lambda`: a small unnamed function. Each time it is called with a number `x`, `eval` runs the compiled code.
   - `{'__builtins__': {}}` hides Python's built-in functions, so names like `open` or `print` can't be used.
   - `{**names, 'x': x}` provides the maths names plus the current value of `x`.
+  - So only maths names and `x` are visible to your expression. This is not a security sandbox, so only type expressions you trust.
 
 **Self-check**
 
-- **L22** Runs the search on the default function and checks that it finds the known peak at 3. If `hill_climb` or `make_function` is ever broken, the program stops here with an `AssertionError`.
+- **L19** Runs the search on the default function and checks that it finds the known peak at 3. If `hill_climb` or `make_function` is ever broken, the program stops here with an `AssertionError`.
 
 **Main program**
 
-- **L24** Prints instructions.
-- **L25** Reads your function. `.strip()` removes stray spaces. If you only press Enter, the input is an empty string, which counts as false, so `or` falls back to the default.
-- **L26** Reads the start point the same way. `float(...)` turns the text into a number.
-- **L27** Reads the step size.
-- **L28** `iters = 1000` sets the move limit. It is stored in a variable so that L36 can compare against the same number.
-- **L30-31** Builds the function from your text and runs the search.
-- **L32-33** If anything goes wrong, print the problem instead of crashing. Typical causes:
+- **L21** Prints instructions.
+- **L22** Reads your function. `.strip()` removes stray spaces. If you only press Enter, the input is an empty string, which counts as false, so `or` falls back to the default.
+- **L23** Reads the start point the same way. `float(...)` turns the text into a number.
+- **L24** Reads the step size.
+- **L25** `iters = 1000` sets the move limit. It is stored in a variable so that L33 can compare against the same number.
+- **L27-28** Builds the function from your text and runs the search.
+- **L29-30** If anything goes wrong, print the problem instead of crashing. Typical causes:
   - a typing mistake in the expression;
   - an unknown name, like `foo(x)`;
   - a function that isn't defined at some point the search visits. For example, `log(x)` fails if the search reaches $x \le 0$.
-- **L34-35** `else:` runs only if no error happened. It prints the result to 4 decimals. Rounding hides floating-point noise: adding 0.1 thirty times gives `3.0000000000000013`, not exactly 3.
-- **L36-37** If all 1000 moves were used, warn that the result is probably not a peak.
+- **L31-32** `else:` runs only if no error happened. It prints the result to 4 decimals. Rounding hides floating-point noise: adding 0.1 thirty times gives `3.0000000000000013`, not exactly 3.
+- **L33-34** If all 1000 moves were used, warn that the result is probably not a peak.
 
 Example runs:
 
@@ -653,18 +651,17 @@ The decision boundary is the line $0.99\,x_1 + 0.49\,x_2 = 5.74$, and `[4, 4]` l
 
 - **L1** `import numpy as np`.
 - **L3** `train(X, y, lr=0.1, iters=1000)` takes the features, labels (0/1), learning rate and number of gradient steps.
-- **L4** Docstring.
-- **L5** `w, b = np.zeros(X.shape[1]), 0.0` starts with one zero weight per feature (`X.shape[1]` is the number of columns) and a zero bias. At this start, every prediction is $\sigma(0) = 0.5$.
-- **L6** `for _ in range(iters):` takes 1000 gradient steps.
-- **L7** `p = 1 / (1 + np.exp(-(X @ w + b)))` is the **forward pass**. `X @ w` is a matrix-vector product, giving every example's score at once. Adding `b` and applying the sigmoid gives a probability for every example.
-- **L8** `w -= lr * X.T @ (p - y) / len(y)` is the weight update. `p - y` is the error per example. `X.T @ (p - y) / n` is the gradient $\nabla_w$ derived above. Step against it, scaled by `lr`.
-- **L9** `b -= lr * np.mean(p - y)` is the bias update. Its gradient is the mean error.
-- **L10** Returns the learned parameters.
-- **L12-13** `predict` computes the probabilities, compares them with `>= 0.5` (giving `True`/`False`), and `.astype(int)` turns those into `1`/`0`.
-- **L15-17** The same toy data as kNN, with labels 0 and 1.
-- **L19** Trains the model.
-- **L20** Prints the learned weights and bias.
-- **L21-22** Prints each test point's predicted class.
+- **L4** `w, b = np.zeros(X.shape[1]), 0.0` starts with one zero weight per feature (`X.shape[1]` is the number of columns) and a zero bias. At this start, every prediction is $\sigma(0) = 0.5$.
+- **L5** `for _ in range(iters):` takes 1000 gradient steps.
+- **L6** `p = 1 / (1 + np.exp(-(X @ w + b)))` is the **forward pass**. `X @ w` is a matrix-vector product, giving every example's score at once. Adding `b` and applying the sigmoid gives a probability for every example.
+- **L7** `w -= lr * X.T @ (p - y) / len(y)` is the weight update. `p - y` is the error per example. `X.T @ (p - y) / n` is the gradient $\nabla_w$ derived above. Step against it, scaled by `lr`.
+- **L8** `b -= lr * np.mean(p - y)` is the bias update. Its gradient is the mean error.
+- **L9** Returns the learned parameters.
+- **L11-12** `predict` computes the probabilities, compares them with `>= 0.5` (giving `True`/`False`), and `.astype(int)` turns those into `1`/`0`.
+- **L14-16** The same toy data as kNN, with labels 0 and 1.
+- **L18** Trains the model.
+- **L19** Prints the learned weights and bias.
+- **L20-21** Prints each test point's predicted class.
 
 Output:
 
@@ -857,8 +854,8 @@ Tuples are used because they can't be changed, so they can be dictionary keys.
 
 **`manhattan(s)`: the heuristic $h$**
 
-- **L6-7** Takes a board and returns the Manhattan distance.
-- **L8**
+- **L6** Takes a board and returns the Manhattan distance.
+- **L7**
   - `for i, t in enumerate(s) if t` goes through each cell index `i` and tile `t`, skipping the blank (`t = 0` is false).
   - Tile `t` belongs at index `t - 1`, because tile 1 goes in cell 0, tile 2 in cell 1, and so on. Its goal row is `(t - 1) // 3` and its goal column is `(t - 1) % 3`.
   - `abs(i // 3 - (t - 1) // 3)` is the row distance. `abs(i % 3 - (t - 1) % 3)` is the column distance.
@@ -866,59 +863,59 @@ Tuples are used because they can't be changed, so they can be dictionary keys.
 
 **`neighbours(s)`: legal moves**
 
-- **L11-12** A generator: it `yield`s each next board one at a time.
-- **L13** `i = s.index(0)` finds the blank.
-- **L14** `divmod(i, 3)` gives the blank's row and column in one step.
-- **L15** The four directions the blank can move: up, down, left, right. Moving the blank is the same as sliding the neighbouring tile into it.
-- **L16** Skips directions that would leave the 3×3 grid.
-- **L17** `j` is the index of the cell the blank moves into.
-- **L18-19** Copies the board into a list, which can be changed, and swaps the blank with that tile.
-- **L20** Turns it back into a tuple and yields it.
+- **L10** A generator: it `yield`s each next board one at a time.
+- **L11** `i = s.index(0)` finds the blank.
+- **L12** `divmod(i, 3)` gives the blank's row and column in one step.
+- **L13** The four directions the blank can move: up, down, left, right. Moving the blank is the same as sliding the neighbouring tile into it.
+- **L14** Skips directions that would leave the 3×3 grid.
+- **L15** `j` is the index of the cell the blank moves into.
+- **L16-17** Copies the board into a list, which can be changed, and swaps the blank with that tile.
+- **L18** Turns it back into a tuple and yields it.
 
 **`solvable(s)`: the inversion test**
 
-- **L23-24** Returns `True` if the board can reach the goal.
-- **L25** `tiles` is the 8 tiles in reading order, without the blank.
-- **L26** For every tile `a`, it looks at every tile `b` after it (`tiles[k + 1:]`). `a > b` is `True` for an inversion, and `sum` counts `True` as 1. `% 2 == 0` checks that the count is even.
+- **L21** Returns `True` if the board can reach the goal.
+- **L22** `tiles` is the 8 tiles in reading order, without the blank.
+- **L23** For every tile `a`, it looks at every tile `b` after it (`tiles[k + 1:]`). `a > b` is `True` for an inversion, and `sum` counts `True` as 1. `% 2 == 0` checks that the count is even.
 
 **`a_star(start)`: the search**
 
-- **L29-30** Returns the list of boards from start to goal, plus how many boards were explored.
-- **L31** `frontier` is the priority queue. Each entry is `(f, g, board)`. Python compares tuples item by item, so the heap orders entries by `f` first. The start entry has `g = 0` and `f = h`.
-- **L32** `parent` records which board each board was reached from. It is used to rebuild the path at the end. The start has no parent.
-- **L33** `g_cost` holds the fewest moves found so far to reach each board.
-- **L34** `expanded` counts how many boards were explored.
-- **L35** Keeps going while there are boards to explore.
-- **L36** Takes the entry with the smallest `f`.
-- **L37-38** **Lazy deletion:** if this entry's `g` is higher than the best known for this board, a cheaper route was found later, so skip it.
-- **L39** If the board is the goal, we're done. Because the heuristic is admissible, this is a shortest path.
-- **L40-43** Rebuilds the path backwards: goal, its parent, that board's parent, and so on. The start's parent is `None`, which is false, so the loop stops there. A board tuple is never empty, so it always counts as true.
-- **L44** `path[::-1]` reverses the list so it runs from start to goal.
-- **L45** Counts this board as explored.
-- **L46** Looks at every board one move away.
-- **L47** Each move costs 1, so the neighbour can be reached in `g + 1` moves. `g_cost.get(n, float('inf'))` is the best known cost to reach `n`, or infinity if `n` hasn't been seen yet. Continue only if this route is **better**.
-- **L48-49** Records the new best cost, and that we came from `s`.
-- **L50** Pushes the neighbour with `f = (g + 1) + h(n)`.
+- **L26** Returns the list of boards from start to goal, plus how many boards were explored.
+- **L27** `frontier` is the priority queue. Each entry is `(f, g, board)`. Python compares tuples item by item, so the heap orders entries by `f` first. The start entry has `g = 0` and `f = h`.
+- **L28** `parent` records which board each board was reached from. It is used to rebuild the path at the end. The start has no parent.
+- **L29** `g_cost` holds the fewest moves found so far to reach each board.
+- **L30** `expanded` counts how many boards were explored.
+- **L31** Keeps going while there are boards to explore.
+- **L32** Takes the entry with the smallest `f`.
+- **L33-34** **Lazy deletion:** if this entry's `g` is higher than the best known for this board, a cheaper route was found later, so skip it.
+- **L35** If the board is the goal, we're done. Because the heuristic is admissible, this is a shortest path.
+- **L36-39** Rebuilds the path backwards: goal, its parent, that board's parent, and so on. The start's parent is `None`, which is false, so the loop stops there. A board tuple is never empty, so it always counts as true.
+- **L40** `path[::-1]` reverses the list so it runs from start to goal.
+- **L41** Counts this board as explored.
+- **L42** Looks at every board one move away.
+- **L43** Each move costs 1, so the neighbour can be reached in `g + 1` moves. `g_cost.get(n, float('inf'))` is the best known cost to reach `n`, or infinity if `n` hasn't been seen yet. Continue only if this route is **better**.
+- **L44-45** Records the new best cost, and that we came from `s`.
+- **L46** Pushes the neighbour with `f = (g + 1) + h(n)`.
 
 **`show(s)`: print a board**
 
-- **L54** The starting index of each row.
-- **L55** Prints the 3 tiles of the row, with `_` for the blank.
-- **L56** Blank line after the board.
+- **L50** The starting index of each row.
+- **L51** Prints the 3 tiles of the row, with `_` for the blank.
+- **L52** Blank line after the board.
 
 **Self-check**
 
-- **L59** The board `1 2 3 / 4 5 6 / _ 7 8` is 2 moves from solved, so the path must hold 3 boards: the start, 1 move, 2 moves. If the search is ever broken, the program stops here with an `AssertionError`.
+- **L55** The board `1 2 3 / 4 5 6 / _ 7 8` is 2 moves from solved, so the path must hold 3 boards: the start, 1 move, 2 moves. If the search is ever broken, the program stops here with an `AssertionError`.
 
 **Main program**
 
-- **L61** Reads the board you type.
-- **L62** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work. If you only press Enter, the tuple is empty, which counts as false, so `or` falls back to the default board.
-- **L64-65** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (a missing digit, a repeated digit, too many digits) is rejected.
-- **L66-67** Rejects unsolvable boards before searching.
-- **L69** Solves the board.
-- **L70-72** Prints every board on the path, labelled `Start:`, `Move 1:`, `Move 2:` and so on.
-- **L73** The number of moves is one less than the number of boards. Also prints how many boards A\* explored.
+- **L57** Reads the board you type.
+- **L58** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work. If you only press Enter, the tuple is empty, which counts as false, so `or` falls back to the default board.
+- **L60-61** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (a missing digit, a repeated digit, too many digits) is rejected.
+- **L62-63** Rejects unsolvable boards before searching.
+- **L65** Solves the board.
+- **L66-68** Prints every board on the path, labelled `Start:`, `Move 1:`, `Move 2:` and so on.
+- **L69** The number of moves is one less than the number of boards. Also prints how many boards A\* explored.
 
 Example runs:
 
@@ -981,37 +978,35 @@ The accuracies come from one particular 30-flower test set (`seed=0`). A differe
 - **L2** `from pathlib import Path`: file path handling.
 - **L4** `import numpy as np`.
 - **L6** `FEATURES` holds the names of the 4 columns, used for printing.
-- **L9** `load_iris()` reads the dataset.
-- **L10** Docstring: returns a `150 x 4` array of measurements and an array of species names.
-- **L11** `Path(__file__).with_name('iris.csv')` builds the path of `iris.csv` **in the same folder as this file**, so the scripts work whichever folder you run them from. `with open(...) as f` opens the file and closes it automatically afterwards.
-- **L12** `[r for r in csv.reader(f) if r]` reads every row as a list of strings. `if r` skips empty rows, because the file ends with a blank line.
-- **L13** `r[:4]` takes the first 4 values of each row, and `dtype=float` converts them from text to numbers. That array is `X`. `r[4]`, the species name, goes into `y`.
-- **L16** `split(X, y, test_frac=0.2, seed=0)` divides the data into training and test sets.
-- **L17** Docstring.
-- **L18** `permutation(len(X))` returns the numbers `0..149` in a random (but seeded, so repeatable) order. The file is sorted by species, so shuffling is essential. Without it, the test set would contain only virginica.
-- **L19** `n = int(len(X) * test_frac)` is the test set size: 30.
-- **L20** The first `n` shuffled indexes become the test set, and the rest (120) the training set. Indexing `X` and `y` with the **same** indexes keeps every flower with its own label.
+- **L9** `load_iris()` reads the dataset. It returns a `150 x 4` array of measurements and an array of species names.
+- **L10** `Path(__file__).with_name('iris.csv')` builds the path of `iris.csv` **in the same folder as this file**, so the scripts work whichever folder you run them from. `with open(...) as f` opens the file and closes it automatically afterwards.
+- **L11** `[r for r in csv.reader(f) if r]` reads every row as a list of strings. `if r` skips empty rows, because the file ends with a blank line.
+- **L12** `r[:4]` takes the first 4 values of each row, and `dtype=float` converts them from text to numbers. That array is `X`. `r[4]`, the species name, goes into `y`.
+- **L15** `split(X, y, test_frac=0.2, seed=0)` divides the data into training and test sets.
+- **L16** `permutation(len(X))` returns the numbers `0..149` in a random (but seeded, so repeatable) order. The file is sorted by species, so shuffling is essential. Without it, the test set would contain only virginica.
+- **L17** `n = int(len(X) * test_frac)` is the test set size: 30.
+- **L18** The first `n` shuffled indexes become the test set, and the rest (120) the training set. Indexing `X` and `y` with the **same** indexes keeps every flower with its own label.
 
 ## [working/knn_iris.py](working/knn_iris.py)
 
 - **L1-2** Imports, as in `knn.py`.
 - **L4** Imports the loader and splitter from `iris.py`.
-- **L7-13** `knn_predict`: identical to `knn.py`, plus a docstring (L8). Now each point has 4 features instead of 2. Euclidean distance works the same way in any number of dimensions.
-- **L16** Loads the 150 flowers.
-- **L17** Splits them into 120 for training and 30 for testing.
-- **L19** Tries several values of `k` to show how the choice affects accuracy.
-- **L20** `knn_predict(...) == y_test` gives a True/False array with one entry per test flower (`True` = correct). Its mean is the fraction correct, which is the accuracy.
-- **L21** `:.2%` formats the number as a percentage with 2 decimals.
+- **L7-12** `knn_predict`: identical to `knn.py`. Now each point has 4 features instead of 2. Euclidean distance works the same way in any number of dimensions.
+- **L15** Loads the 150 flowers.
+- **L16** Splits them into 120 for training and 30 for testing.
+- **L18** Tries several values of `k` to show how the choice affects accuracy.
+- **L19** `knn_predict(...) == y_test` gives a True/False array with one entry per test flower (`True` = correct). Its mean is the fraction correct, which is the accuracy.
+- **L20** `:.2%` formats the number as a percentage with 2 decimals.
 
 ## [working/naive_bayes_iris.py](working/naive_bayes_iris.py)
 
 - **L1-3** Imports.
-- **L6-15** `train` and `predict`: identical to `naive_bayes.py`, plus docstrings. Each class now stores 4 means and 4 variances.
-- **L18-19** Load and split.
-- **L21** Train on the 120 training flowers.
-- **L22** Predict the 30 test flowers.
-- **L23** Overall accuracy.
-- **L24-25** Per-species results.
+- **L6-13** `train` and `predict`: identical to `naive_bayes.py`. Each class now stores 4 means and 4 variances.
+- **L16-17** Load and split.
+- **L19** Train on the 120 training flowers.
+- **L20** Predict the 30 test flowers.
+- **L21** Overall accuracy.
+- **L22-23** Per-species results.
   - `(preds == c) & (y_test == c)` is `True` where the flower **is** species `c` **and** was predicted as `c`. Summing that counts the correct ones.
   - `np.sum(y_test == c)` counts how many test flowers are species `c`.
   - The output shows that all of naive Bayes' mistakes are virginica flowers mistaken for versicolor, the overlapping pair.
@@ -1019,19 +1014,19 @@ The accuracies come from one particular 30-flower test set (`seed=0`). A differe
 ## [working/kmeans_iris.py](working/kmeans_iris.py)
 
 - **L1-3** Imports.
-- **L6-20** `kmeans`: identical to `kmeans.py`, plus a docstring and a comment.
-- **L23-25** `inertia(X, centroids, labels)` measures how tight a clustering is.
+- **L6-18** `kmeans`: identical to `kmeans.py`.
+- **L21-22** `inertia(X, centroids, labels)` measures how tight a clustering is.
   - `centroids[labels]` builds, for every point, its own cluster's centroid (one row per point).
   - `(X - centroids[labels]) ** 2` gives each point's squared difference from that centroid.
   - `np.sum` adds it all up. Lower is better.
-- **L28** Loads the data. **The species labels `y` are never given to K-Means.** They are only used afterwards, to check whether the clusters match real species.
-- **L30** Runs K-Means 10 times (`seed=s` for `s = 0..9`) and keeps the result with the lowest inertia.
+- **L25** Loads the data. **The species labels `y` are never given to K-Means.** They are only used afterwards, to check whether the clusters match real species.
+- **L26** Runs K-Means 10 times (`seed=s` for `s = 0..9`) and keeps the result with the lowest inertia.
   - `kmeans(...) for s in range(10)` is a generator that produces 10 `(centroids, labels)` results.
   - `key=lambda r: inertia(X, *r)` scores each one. `*r` unpacks the pair into the `centroids` and `labels` arguments.
   - `min(...)` returns the best result, which is unpacked into `centroids, labels`.
   - Without the restarts, seed 0 alone got stuck in a poor solution: it split setosa into two clusters and merged versicolor with virginica.
-- **L32** Prints the centroids with the feature names. Each centroid describes a "typical flower" for its cluster.
-- **L33-36** For each cluster, counts which real species ended up in it. `np.unique(..., return_counts=True)` returns the distinct species and how often each appears. `.tolist()` converts both to plain Python values so they print cleanly.
+- **L28** Prints the centroids with the feature names. Each centroid describes a "typical flower" for its cluster.
+- **L29-32** For each cluster, counts which real species ended up in it. `np.unique(..., return_counts=True)` returns the distinct species and how often each appears. `.tolist()` converts both to plain Python values so they print cleanly.
 
 Output:
 
@@ -1050,17 +1045,16 @@ cluster 2: {'Iris-setosa': 50}
 ## [working/logistic_regression_iris.py](working/logistic_regression_iris.py)
 
 - **L1-3** Imports.
-- **L6-17** `train` and `predict`: identical to `logistic_regression.py`.
-- **L20** Comment. Logistic regression as written here separates **two** classes. Setosa is dropped because it is trivially separable. The interesting test is the overlapping pair.
-- **L21** Loads the data.
-- **L22** `keep = y != 'Iris-setosa'` is a mask that is `True` for the 100 non-setosa flowers.
-- **L23** Keeps only those rows. `(y[keep] == 'Iris-virginica').astype(int)` turns the species names into numbers: virginica becomes 1 and versicolor becomes 0.
-- **L24** Splits the 100 flowers into 80 for training and 20 for testing.
-- **L27** Computes the mean and standard deviation of each feature **from the training set only**.
-- **L28** Standardizes both sets with those training statistics.
-- **L30** Trains.
-- **L31** Prints the weights. Petal length (2.86) and petal width (3.66) get the largest weights, so they are the features that best separate the two species. Sepal size matters much less.
-- **L32-33** Train and test accuracy. Test accuracy (85%) is lower than train accuracy (98.75%). That gap is normal: the model is scored on flowers it has never seen.
+- **L6-16** `train` and `predict`: identical to `logistic_regression.py`.
+- **L19** Loads the data. Logistic regression as written here separates **two** classes, so the next two lines drop setosa, which is trivially separable. The interesting test is the overlapping pair.
+- **L20** `keep = y != 'Iris-setosa'` is a mask that is `True` for the 100 non-setosa flowers.
+- **L21** Keeps only those rows. `(y[keep] == 'Iris-virginica').astype(int)` turns the species names into numbers: virginica becomes 1 and versicolor becomes 0.
+- **L22** Splits the 100 flowers into 80 for training and 20 for testing.
+- **L24** Computes the mean and standard deviation of each feature **from the training set only**.
+- **L25** Standardizes both sets with those training statistics.
+- **L27** Trains.
+- **L28** Prints the weights. Petal length (2.86) and petal width (3.66) get the largest weights, so they are the features that best separate the two species. Sepal size matters much less.
+- **L29-30** Train and test accuracy. Test accuracy (85%) is lower than train accuracy (98.75%). That gap is normal: the model is scored on flowers it has never seen.
 
 ---
 

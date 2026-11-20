@@ -1,7 +1,6 @@
 import numpy as np
 
 def train(X, y, lr=0.1, iters=1000):
-    """Fit weights and bias with gradient descent on log loss."""
     w, b = np.zeros(X.shape[1]), 0.0
     for _ in range(iters):
         p = 1 / (1 + np.exp(-(X @ w + b)))

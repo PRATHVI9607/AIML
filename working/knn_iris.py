@@ -5,7 +5,6 @@ from iris import load_iris, split
 
 
 def knn_predict(X_train, y_train, X_test, k=3):
-    """Label each test point by majority vote of its k nearest training points."""
     preds = []
     for x in X_test:
         nearest = np.argsort(np.linalg.norm(X_train - x, axis=1))[:k]

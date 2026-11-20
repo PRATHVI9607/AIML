@@ -4,12 +4,10 @@ from iris import load_iris, split
 
 
 def train(X, y):
-    """Per class: prior P(c), feature means and variances (Gaussian Naive Bayes)."""
     return {c: (np.mean(y == c), X[y == c].mean(axis=0), X[y == c].var(axis=0) + 1e-9) for c in np.unique(y)}
 
 
 def predict(X, model):
-    """Pick the class with the highest log P(c) + sum of log P(x_i | c)."""
     scores = [np.log(prior) - 0.5 * np.sum(np.log(2 * np.pi * var) + (X - mean) ** 2 / var, axis=1)
               for prior, mean, var in model.values()]
     return np.array(list(model))[np.argmax(scores, axis=0)]
