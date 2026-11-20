@@ -1,7 +1,7 @@
 import math
 
 
-def hill_climb(f, x, step=0.1, iters=1000):
+def hill_climb(f, x, step, iters):
     for i in range(iters):
         best = max((x - step, x + step), key=f)
         if f(best) <= f(x):
@@ -16,12 +16,10 @@ def make_function(expr):
     return lambda x: eval(code, {'__builtins__': {}}, {**names, 'x': x})
 
 
-assert abs(hill_climb(make_function('-(x - 3)^2 + 5'), 0.0)[0] - 3) < 0.1
-
-print('Hill climbing: finds a maximum of f(x). Press Enter to use the default shown in [ ].')
-expr = input('f(x) = [-(x - 3)^2 + 5] ').strip() or '-(x - 3)^2 + 5'
-start = float(input('Start x [0]: ') or 0)
-step = float(input('Step size [0.1]: ') or 0.1)
+print('Hill climbing: finds a maximum of f(x).')
+expr = input('f(x) = ')
+start = float(input('Start x: '))
+step = float(input('Step size: '))
 iters = 1000
 
 try:

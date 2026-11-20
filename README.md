@@ -306,13 +306,11 @@ The program asks you for $f(x)$, the start point and the step size, so you can t
 - `x`, numbers, `+ - * /`, brackets, and powers written as `x**2` or `x^2`.
 - Anything from Python's `math` module: `sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `fabs`, `pi`, `e` and so on.
 
-Press Enter at any prompt to use the default shown in `[ ]`.
-
-### The default function
+### Example function
 
 $$f(x) = -(x - 3)^2 + 5$$
 
-This is an upside-down parabola with a single peak at $x = 3$, where $f(3) = 5$. The search starts at $x = 0$, takes steps of 0.1, and needs $3 / 0.1 = 30$ steps to reach the top.
+This is an upside-down parabola with a single peak at $x = 3$, where $f(3) = 5$. Typed in with start 0 and step 0.1, the search needs $3 / 0.1 = 30$ steps to reach the top.
 
 ```
 f(x)
@@ -340,7 +338,7 @@ f(x)
 
 **`hill_climb`: the search**
 
-- **L4** `hill_climb(f, x, step=0.1, iters=1000)` takes the function, the start point, the distance to a neighbour, and a safety limit on the number of moves.
+- **L4** `hill_climb(f, x, step, iters)` takes the function, the start point, the distance to a neighbour, and a safety limit on the number of moves.
 - **L5** `for i in range(iters):` makes at most `iters` moves. `i` counts the moves made so far.
 - **L6** `best = max((x - step, x + step), key=f)` picks whichever of the two neighbours has the larger `f` value. `key=f` tells `max` to compare the points by `f(point)` rather than by the numbers themselves.
 - **L7-8** If even the better neighbour is not higher than the current point, we are on a peak (or a plateau), so return the point, its height and the number of moves `i`. The `<=` matters: with `<`, the search could step back and forth forever on flat ground.
@@ -359,29 +357,25 @@ f(x)
   - `{**names, 'x': x}` provides the maths names plus the current value of `x`.
   - So only maths names and `x` are visible to your expression. This is not a security sandbox, so only type expressions you trust.
 
-**Self-check**
-
-- **L19** Runs the search on the default function and checks that it finds the known peak at 3. If `hill_climb` or `make_function` is ever broken, the program stops here with an `AssertionError`.
-
 **Main program**
 
-- **L21** Prints instructions.
-- **L22** Reads your function. `.strip()` removes stray spaces. If you only press Enter, the input is an empty string, which counts as false, so `or` falls back to the default.
-- **L23** Reads the start point the same way. `float(...)` turns the text into a number.
-- **L24** Reads the step size.
-- **L25** `iters = 1000` sets the move limit. It is stored in a variable so that L33 can compare against the same number.
-- **L27-28** Builds the function from your text and runs the search.
-- **L29-30** If anything goes wrong, print the problem instead of crashing. Typical causes:
+- **L19** Prints what the program does.
+- **L20** Reads your function as text.
+- **L21** Reads the start point. `float(...)` turns the text into a number. Typing something that isn't a number stops the program with a `ValueError`.
+- **L22** Reads the step size the same way.
+- **L23** `iters = 1000` sets the move limit. It is stored in a variable so that L31 can compare against the same number.
+- **L25-26** Builds the function from your text and runs the search.
+- **L27-28** If anything goes wrong, print the problem instead of crashing. Typical causes:
   - a typing mistake in the expression;
   - an unknown name, like `foo(x)`;
   - a function that isn't defined at some point the search visits. For example, `log(x)` fails if the search reaches $x \le 0$.
-- **L31-32** `else:` runs only if no error happened. It prints the result to 4 decimals. Rounding hides floating-point noise: adding 0.1 thirty times gives `3.0000000000000013`, not exactly 3.
-- **L33-34** If all 1000 moves were used, warn that the result is probably not a peak.
+- **L29-30** `else:` runs only if no error happened. It prints the result to 4 decimals. Rounding hides floating-point noise: adding 0.1 thirty times gives `3.0000000000000013`, not exactly 3.
+- **L31-32** If all 1000 moves were used, warn that the result is probably not a peak.
 
 Example runs:
 
 ```
-f(x) = [-(x - 3)^2 + 5]                <- Enter: use the defaults
+f(x) = -(x - 3)^2 + 5, start 0, step 0.1
 Max found at x = 3.0000, f(x) = 5.0000 after 30 steps
 
 f(x) = sin(x) + x/5, start 0, step 0.01
