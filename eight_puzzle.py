@@ -25,43 +25,25 @@ def solvable(s):
 
 def a_star(start):
     frontier = [(manhattan(start), 0, start)]
-    parent = {start: None}
     g_cost = {start: 0}
-    expanded = 0
     while frontier:
         f, g, s = heapq.heappop(frontier)
         if g > g_cost[s]:
             continue
         if s == GOAL:
-            path = []
-            while s:
-                path.append(s)
-                s = parent[s]
-            return path[::-1], expanded
-        expanded += 1
+            return g
         for n in neighbours(s):
             if g + 1 < g_cost.get(n, float('inf')):
                 g_cost[n] = g + 1
-                parent[n] = s
                 heapq.heappush(frontier, (g + 1 + manhattan(n), g + 1, n))
 
 
-def show(s):
-    for r in (0, 3, 6):
-        print(' '.join(str(t) if t else '_' for t in s[r:r + 3]))
-    print()
-
-
-text = input('Start board, 9 digits row by row, 0 = blank [1 2 3 0 4 6 7 5 8]: ')
-start = tuple(int(ch) for ch in text if ch.isdigit()) or (1, 2, 3, 0, 4, 6, 7, 5, 8)
+text = input('Start board, 9 digits row by row, 0 = blank: ')
+start = tuple(int(ch) for ch in text if ch.isdigit())
 
 if sorted(start) != list(range(9)):
     print('Invalid board: type each digit 0-8 exactly once.')
 elif not solvable(start):
     print('This board cannot be solved (odd number of inversions).')
 else:
-    path, expanded = a_star(start)
-    for step, s in enumerate(path):
-        print('Start:' if step == 0 else f'Move {step}:')
-        show(s)
-    print(f'Solved in {len(path) - 1} moves, {expanded} states expanded.')
+    print(f'Solved in {a_star(start)} moves.')

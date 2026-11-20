@@ -33,7 +33,7 @@ python3 knn.py
 python3 kmeans.py
 python3 logistic_regression.py
 python3 naive_bayes.py
-python3 eight_puzzle.py       # type a board, or press Enter for the default
+python3 eight_puzzle.py       # type a board, e.g. 8 6 7 2 5 4 3 0 1
 
 cd working
 python3 knn_iris.py
@@ -800,7 +800,7 @@ For each tile, count how many rows plus how many columns it is away from its goa
 
 **Why it is admissible:** one move shifts one tile by one cell. A tile that is 3 cells from home needs at least 3 moves of its own, so the total can never be more than the real number of moves.
 
-**Example:** the default board.
+**Example:** the board `1 2 3 / _ 4 6 / 7 5 8`.
 
 ```
 1 2 3        tile 4: 1 column away from home  -> 1
@@ -873,59 +873,40 @@ Tuples are used because they can't be changed, so they can be dictionary keys.
 
 **`a_star(start)`: the search**
 
-- **L26** Returns the list of boards from start to goal, plus how many boards were explored.
+- **L26** Returns the fewest moves needed to solve the board.
 - **L27** `frontier` is the priority queue. Each entry is `(f, g, board)`. Python compares tuples item by item, so the heap orders entries by `f` first. The start entry has `g = 0` and `f = h`.
-- **L28** `parent` records which board each board was reached from. It is used to rebuild the path at the end. The start has no parent.
-- **L29** `g_cost` holds the fewest moves found so far to reach each board.
-- **L30** `expanded` counts how many boards were explored.
-- **L31** Keeps going while there are boards to explore.
-- **L32** Takes the entry with the smallest `f`.
-- **L33-34** **Lazy deletion:** if this entry's `g` is higher than the best known for this board, a cheaper route was found later, so skip it.
-- **L35** If the board is the goal, we're done. Because the heuristic is admissible, this is a shortest path.
-- **L36-39** Rebuilds the path backwards: goal, its parent, that board's parent, and so on. The start's parent is `None`, which is false, so the loop stops there. A board tuple is never empty, so it always counts as true.
-- **L40** `path[::-1]` reverses the list so it runs from start to goal.
-- **L41** Counts this board as explored.
-- **L42** Looks at every board one move away.
-- **L43** Each move costs 1, so the neighbour can be reached in `g + 1` moves. `g_cost.get(n, float('inf'))` is the best known cost to reach `n`, or infinity if `n` hasn't been seen yet. Continue only if this route is **better**.
-- **L44-45** Records the new best cost, and that we came from `s`.
-- **L46** Pushes the neighbour with `f = (g + 1) + h(n)`.
-
-**`show(s)`: print a board**
-
-- **L50** The starting index of each row.
-- **L51** Prints the 3 tiles of the row, with `_` for the blank.
-- **L52** Blank line after the board.
+- **L28** `g_cost` holds the fewest moves found so far to reach each board.
+- **L29** Keeps going while there are boards to explore.
+- **L30** Takes the entry with the smallest `f`.
+- **L31-32** **Lazy deletion:** if this entry's `g` is higher than the best known for this board, a cheaper route was found later, so skip it.
+- **L33-34** If the board is the goal, return `g`, the number of moves it took to get here. Because the heuristic is admissible, this is the fewest possible.
+- **L35** Looks at every board one move away.
+- **L36** Each move costs 1, so the neighbour can be reached in `g + 1` moves. `g_cost.get(n, float('inf'))` is the best known cost to reach `n`, or infinity if `n` hasn't been seen yet. Continue only if this route is **better**.
+- **L37** Records the new best cost.
+- **L38** Pushes the neighbour with `f = (g + 1) + h(n)`.
 
 **Main program**
 
-- **L55** Reads the board you type.
-- **L56** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work. If you only press Enter, the tuple is empty, which counts as false, so `or` falls back to the default board.
-- **L58-59** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (a missing digit, a repeated digit, too many digits) is rejected.
-- **L60-61** Rejects unsolvable boards before searching.
-- **L63** Solves the board.
-- **L64-66** Prints every board on the path, labelled `Start:`, `Move 1:`, `Move 2:` and so on.
-- **L67** The number of moves is one less than the number of boards. Also prints how many boards A\* explored.
+- **L41** Reads the board you type.
+- **L42** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work.
+- **L44-45** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (an empty input, a missing digit, a repeated digit, too many digits) is rejected.
+- **L46-47** Rejects unsolvable boards before searching.
+- **L48-49** Solves the board and prints how many moves it took.
 
 Example runs:
 
 ```
-Start board ... [1 2 3 0 4 6 7 5 8]:       <- Enter: default board
-Start:
-1 2 3
-_ 4 6
-7 5 8
-...
-Solved in 3 moves, 3 states expanded.
+Start board, 9 digits row by row, 0 = blank: 1 2 3 0 4 6 7 5 8
+Solved in 3 moves.
 
-Start board ...: 8 6 7 2 5 4 3 0 1         <- one of the hardest boards
-...
-Solved in 31 moves, 21197 states expanded.
+Start board, 9 digits row by row, 0 = blank: 8 6 7 2 5 4 3 0 1
+Solved in 31 moves.
 
-Start board ...: 1 2 3 4 5 6 8 7 0
+Start board, 9 digits row by row, 0 = blank: 1 2 3 4 5 6 8 7 0
 This board cannot be solved (odd number of inversions).
 ```
 
-31 moves is the most any solvable 8-puzzle board needs. A\* solves that board in about half a second, after exploring 21,197 of the 181,440 reachable boards (about 12%).
+31 moves is the most any solvable 8-puzzle board needs. A\* solves that board in about half a second. Along the way it explores 21,197 of the 181,440 reachable boards (about 12%).
 
 ---
 
