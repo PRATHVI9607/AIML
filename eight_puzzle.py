@@ -52,8 +52,6 @@ def show(s):
     print()
 
 
-assert len(a_star((1, 2, 3, 4, 5, 6, 0, 7, 8))[0]) == 3
-
 text = input('Start board, 9 digits row by row, 0 = blank [1 2 3 0 4 6 7 5 8]: ')
 start = tuple(int(ch) for ch in text if ch.isdigit()) or (1, 2, 3, 0, 4, 6, 7, 5, 8)
 

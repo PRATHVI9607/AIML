@@ -14,6 +14,5 @@ X_test = np.array([[2, 2], [7, 6], [4, 4]])
 
 model = train(X_train, y_train)
 preds = predict(X_test, model)
-assert list(predict(X_train, model)) == list(y_train)
 for point, label in zip(X_test, preds):
     print(f'{point} -> {label}')

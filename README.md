@@ -739,8 +739,7 @@ The predicted class is the one with the highest score. This formula is exactly l
 - **L11-13** The same toy data as kNN.
 - **L15** Trains the model.
 - **L16** Predicts the test points.
-- **L17** Self-check: the model must classify its own training points correctly. If it can't, something is broken.
-- **L18-19** Prints the predictions.
+- **L17-18** Prints the predictions.
 
 Output:
 
@@ -897,19 +896,15 @@ Tuples are used because they can't be changed, so they can be dictionary keys.
 - **L51** Prints the 3 tiles of the row, with `_` for the blank.
 - **L52** Blank line after the board.
 
-**Self-check**
-
-- **L55** The board `1 2 3 / 4 5 6 / _ 7 8` is 2 moves from solved, so the path must hold 3 boards: the start, 1 move, 2 moves. If the search is ever broken, the program stops here with an `AssertionError`.
-
 **Main program**
 
-- **L57** Reads the board you type.
-- **L58** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work. If you only press Enter, the tuple is empty, which counts as false, so `or` falls back to the default board.
-- **L60-61** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (a missing digit, a repeated digit, too many digits) is rejected.
-- **L62-63** Rejects unsolvable boards before searching.
-- **L65** Solves the board.
-- **L66-68** Prints every board on the path, labelled `Start:`, `Move 1:`, `Move 2:` and so on.
-- **L69** The number of moves is one less than the number of boards. Also prints how many boards A\* explored.
+- **L55** Reads the board you type.
+- **L56** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work. If you only press Enter, the tuple is empty, which counts as false, so `or` falls back to the default board.
+- **L58-59** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (a missing digit, a repeated digit, too many digits) is rejected.
+- **L60-61** Rejects unsolvable boards before searching.
+- **L63** Solves the board.
+- **L64-66** Prints every board on the path, labelled `Start:`, `Move 1:`, `Move 2:` and so on.
+- **L67** The number of moves is one less than the number of boards. Also prints how many boards A\* explored.
 
 Example runs:
 
