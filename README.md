@@ -17,12 +17,13 @@ Classic Artificial Intelligence and Machine Learning algorithms written from scr
 | 5 | [kmeans.py](kmeans.py) | K-Means clustering with k-means++ initialization | Unsupervised learning |
 | 6 | [logistic_regression.py](logistic_regression.py) | Logistic regression trained by gradient descent | Supervised learning |
 | 7 | [naive_bayes.py](naive_bayes.py) | Gaussian Naive Bayes classifier | Supervised / probabilistic |
-| 8 | [working/](working/) | Programs 4-7 run on the real **Iris** dataset | Real-data versions |
+| 8 | [eight_puzzle.py](eight_puzzle.py) | 8-puzzle solver using A* search | Informed (heuristic) search |
+| 9 | [working/](working/) | Programs 4-7 run on the real **Iris** dataset | Real-data versions |
 
 ## Requirements and how to run
 
 - Python 3.8 or newer (tested on Python 3.14)
-- NumPy (`pip install numpy`). Only programs 4-8 need it. Programs 1-3 use only the standard library.
+- NumPy (`pip install numpy`). Only programs 4-7 and 9 need it. Programs 1-3 and 8 use only the standard library.
 
 ```bash
 python3 tictactoe.py          # interactive game, type a cell number 0-8
@@ -32,6 +33,7 @@ python3 knn.py
 python3 kmeans.py
 python3 logistic_regression.py
 python3 naive_bayes.py
+python3 eight_puzzle.py       # type a board, or press Enter for the default
 
 cd working
 python3 knn_iris.py
@@ -297,7 +299,16 @@ This is a **greedy local search**:
 - *Greedy:* it always takes the best immediate improvement.
 - *Local:* it only remembers the current point, not the path, so it uses almost no memory.
 
-### The function in the program
+### Typing in your own function
+
+The program asks you for $f(x)$, the start point and the step size, so you can try any single-variable function without editing the code. You can use:
+
+- `x`, numbers, `+ - * /`, brackets, and powers written as `x**2` or `x^2`.
+- Anything from Python's `math` module: `sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `fabs`, `pi`, `e` and so on.
+
+Press Enter at any prompt to use the default shown in `[ ]`.
+
+### The default function
 
 $$f(x) = -(x - 3)^2 + 5$$
 
@@ -319,26 +330,74 @@ f(x)
 - **Local maxima:** if $f$ has several hills, the search stops at the top of whichever hill it starts on. That might not be the highest one. Common fixes are *random-restart* hill climbing (start from many points and keep the best) and *simulated annealing* (sometimes accept a downhill move).
 - **Plateaus:** on flat ground, no neighbour is higher, so the search stops even though it is not at a peak.
 - **Step size:** the answer can only be accurate to within one step. A smaller step is more precise but needs more iterations.
-- **Unbounded functions:** if $f$ keeps rising forever (for example $f(x) = x$), the search never stops by itself. It ends only when `iters` runs out.
+- **Unbounded functions:** if $f$ keeps rising forever (for example $f(x) = x^3$), the search never stops by itself. It ends when the 1000-move limit runs out, and the program prints a warning.
 
 ## Line by line
 
-- **L1-2** `f(x)` is the function to maximize. You can replace it with any single-variable function.
+**Imports**
+
+- **L1** `import math` gives access to `sin`, `log`, `pi` and the other maths names you can use in your function.
+
+**`hill_climb`: the search**
+
 - **L4** `hill_climb(f, x, step=0.1, iters=1000)` takes the function, the start point, the distance to a neighbour, and a safety limit on the number of moves.
-- **L5** `for i in range(iters):` runs at most `iters` iterations. `i` counts them.
-- **L6** `best = max((x - step, x + step), key=f)` picks whichever of the two neighbours has the larger `f` value. `key=f` tells `max` to compare the points by `f(point)` rather than by the numbers themselves.
-- **L7-8** `if f(best) <= f(x): break` If even the better neighbour is not higher than the current point, we are on a peak (or a plateau), so stop. The `<=` matters: with `<`, the search could step back and forth forever on flat ground.
-- **L9** `x = best` moves uphill.
-- **L10** Returns the final point, its height, and `i`. When the loop stops at a peak, `i` equals the number of moves made.
-- **L12** Runs the search from $x = 0$ and unpacks the three results.
-- **L13** `assert abs(x - 3) < 0.1` is a self-check that the known peak at 3 was found. **If you change `f`, change or delete this line.**
-- **L14** Prints the result. `:.2f` rounds to 2 decimals, because adding 0.1 thirty times gives `3.0000000000000013` in floating-point arithmetic.
+- **L5** Docstring.
+- **L6** `for i in range(iters):` makes at most `iters` moves. `i` counts the moves made so far.
+- **L7** `best = max((x - step, x + step), key=f)` picks whichever of the two neighbours has the larger `f` value. `key=f` tells `max` to compare the points by `f(point)` rather than by the numbers themselves.
+- **L8-9** If even the better neighbour is not higher than the current point, we are on a peak (or a plateau), so return the point, its height and the number of moves `i`. The `<=` matters: with `<`, the search could step back and forth forever on flat ground.
+- **L10** `x = best` moves uphill.
+- **L11** This line runs only if all `iters` moves were used without finding a peak. It returns `iters` as the move count, which the main program uses to print a warning.
 
-Output:
+**`make_function`: text to function**
+
+- **L14** `make_function(expr)` takes the text you typed, such as `'sin(x) + x/5'`, and returns a real Python function of `x`.
+- **L15** Docstring.
+- **L16**
+  - `expr.replace('^', '**')` lets you write `x^2`. In Python, `^` means something else (bitwise XOR), and `**` is the power operator.
+  - `compile(..., 'eval')` checks the text and turns it into code **once**, so it doesn't have to be re-read on every step. A typing mistake like `x +* 2` fails here with a `SyntaxError`.
+- **L17** `vars(math)` is a dictionary of everything in the `math` module. The comprehension keeps every name that doesn't start with `_` (`sin`, `exp`, `pi`, ...).
+- **L18** Comment. Only maths names and `x` are visible to your expression. This is not a security sandbox, so only type expressions you trust.
+- **L19** Returns a `lambda`: a small unnamed function. Each time it is called with a number `x`, `eval` runs the compiled code.
+  - `{'__builtins__': {}}` hides Python's built-in functions, so names like `open` or `print` can't be used.
+  - `{**names, 'x': x}` provides the maths names plus the current value of `x`.
+
+**Self-check**
+
+- **L22** Runs the search on the default function and checks that it finds the known peak at 3. If `hill_climb` or `make_function` is ever broken, the program stops here with an `AssertionError`.
+
+**Main program**
+
+- **L24** Prints instructions.
+- **L25** Reads your function. `.strip()` removes stray spaces. If you only press Enter, the input is an empty string, which counts as false, so `or` falls back to the default.
+- **L26** Reads the start point the same way. `float(...)` turns the text into a number.
+- **L27** Reads the step size.
+- **L28** `iters = 1000` sets the move limit. It is stored in a variable so that L36 can compare against the same number.
+- **L30-31** Builds the function from your text and runs the search.
+- **L32-33** If anything goes wrong, print the problem instead of crashing. Typical causes:
+  - a typing mistake in the expression;
+  - an unknown name, like `foo(x)`;
+  - a function that isn't defined at some point the search visits. For example, `log(x)` fails if the search reaches $x \le 0$.
+- **L34-35** `else:` runs only if no error happened. It prints the result to 4 decimals. Rounding hides floating-point noise: adding 0.1 thirty times gives `3.0000000000000013`, not exactly 3.
+- **L36-37** If all 1000 moves were used, warn that the result is probably not a peak.
+
+Example runs:
 
 ```
-Max found at x = 3.00, f(x) = 5.00 after 30 steps
+f(x) = [-(x - 3)^2 + 5]                <- Enter: use the defaults
+Max found at x = 3.0000, f(x) = 5.0000 after 30 steps
+
+f(x) = sin(x) + x/5, start 0, step 0.01
+Max found at x = 1.7700, f(x) = 1.3342 after 177 steps
+
+f(x) = x^3                             <- rises forever
+Max found at x = 100.0000, f(x) = 1000000.0000 after 1000 steps
+Warning: stopped after 1000 moves. f may keep rising, so this is not a peak.
+
+f(x) = foo(x)
+Could not evaluate f(x) = foo(x): name 'foo' is not defined
 ```
+
+For `sin(x) + x/5`, the true local maximum is where $\cos x = -\tfrac15$, at $x \approx 1.7722$. A step of 0.01 gets within one step of it.
 
 ---
 
@@ -702,7 +761,189 @@ Output:
 
 ---
 
-# 8. Real-data versions — [working/](working/)
+# 8. 8-Puzzle with A* Search — [eight_puzzle.py](eight_puzzle.py)
+
+## The algorithm from scratch
+
+### The puzzle
+
+The 8-puzzle is a 3×3 frame holding 8 numbered tiles and one empty cell (the **blank**). A move slides a tile next to the blank into it. The goal is to reach this board in the **fewest moves**:
+
+```
+1 2 3
+4 5 6
+7 8 _
+```
+
+### Puzzles as graph search
+
+Think of every possible board as a **node** in a graph, and every legal move as an **edge** between two boards. Each move costs 1. Solving the puzzle optimally means finding the **shortest path** from the start node to the goal node.
+
+The graph is big: $9!/2 = 181{,}440$ boards can reach the goal. A good search avoids looking at most of them.
+
+### Three ways to search
+
+- **Breadth-first search (BFS)** explores boards in order of distance from the start: all boards 1 move away, then all boards 2 moves away, and so on. It always finds the shortest path, but it has no sense of direction, so it explores a huge number of boards.
+- **Greedy best-first search** always explores the board that *looks* closest to the goal. It is fast, but it can be fooled into a long path, so it does not guarantee the shortest solution.
+- **A\*** combines both. For each board $n$ it computes:
+
+$$f(n) = g(n) + h(n)$$
+
+  - $g(n)$: the number of moves already made to reach $n$. This is the exact cost so far.
+  - $h(n)$: the **heuristic**, an *estimate* of the moves still needed from $n$ to the goal.
+  - $f(n)$: the estimated length of the best full solution that passes through $n$.
+
+  A\* always explores the board with the **smallest $f$** next. It keeps the boards waiting to be explored (the **frontier**) in a **priority queue**, which hands back the smallest item quickly.
+
+### Why A\* finds the shortest solution
+
+A heuristic is **admissible** if it **never overestimates** the true number of moves left. With an admissible heuristic, A\* is guaranteed to return a shortest solution:
+
+- Let $C^*$ be the length of the shortest solution.
+- Every board on that shortest path has $f = g + h \le g + \text{(true moves left)} = C^*$.
+- A longer solution, of length $C > C^*$, reaches the goal with $f = C$, because $h = 0$ at the goal.
+- The queue always pops the smallest $f$ first. So every board on the shortest path, all with $f \le C^*$, is popped before the longer solution can be. The shortest one reaches the goal first.
+
+### The heuristic: Manhattan distance
+
+For each tile, count how many rows plus how many columns it is away from its goal cell. Add these up over all 8 tiles. The blank is not counted.
+
+**Why it is admissible:** one move shifts one tile by one cell. A tile that is 3 cells from home needs at least 3 moves of its own, so the total can never be more than the real number of moves.
+
+**Example:** the default board.
+
+```
+1 2 3        tile 4: 1 column away from home  -> 1
+_ 4 6        tile 5: 1 row away               -> 1
+7 5 8        tile 8: 1 column away            -> 1
+             all other tiles are home         -> 0
+                                       h = 3
+```
+
+Here $h = 3$, and the board needs exactly 3 moves, so the estimate is perfect. A\* goes straight to the goal and explores only 3 boards.
+
+Better heuristics (closer to the true cost, but still never over it) mean fewer boards explored. A weaker admissible heuristic, such as "number of tiles out of place", still finds the shortest path but explores many more boards. With $h = 0$, A\* becomes plain BFS by distance.
+
+### Unsolvable boards
+
+Exactly half of all arrangements can **never** reach the goal. To tell which, read the tiles in order (row by row, skipping the blank) and count the **inversions**: pairs where a larger number comes before a smaller one.
+
+- Sliding a tile left or right does not change the reading order, so the inversions stay the same.
+- Sliding a tile up or down moves it past exactly 2 other tiles in the reading order. That changes the count by −2, 0 or +2.
+- So whether the count is **even or odd never changes**. The goal has 0 inversions, which is even, so a board with an **odd** count can never reach it.
+
+The program checks this first. Otherwise A\* would explore all 181,440 reachable boards before giving up.
+
+### Stale queue entries
+
+Python's `heapq` can't update an item already in the queue. When the program finds a cheaper route to a board, it pushes a **new** entry and leaves the old one in place. When an old entry is popped later, its $g$ is higher than the best known $g$ for that board, so it is skipped. This technique is called *lazy deletion*.
+
+## Line by line
+
+A board is stored as a **tuple of 9 numbers**, read row by row, with `0` for the blank. Cell index `i` sits in row `i // 3` and column `i % 3`:
+
+```
+index:  0 1 2      row = i // 3
+        3 4 5      col = i % 3
+        6 7 8
+```
+
+Tuples are used because they can't be changed, so they can be dictionary keys.
+
+**Setup**
+
+- **L1** `import heapq`: Python's built-in priority queue. `heappop` always returns the smallest item.
+- **L3** `GOAL`: the solved board.
+
+**`manhattan(s)`: the heuristic $h$**
+
+- **L6-7** Takes a board and returns the Manhattan distance.
+- **L8**
+  - `for i, t in enumerate(s) if t` goes through each cell index `i` and tile `t`, skipping the blank (`t = 0` is false).
+  - Tile `t` belongs at index `t - 1`, because tile 1 goes in cell 0, tile 2 in cell 1, and so on. Its goal row is `(t - 1) // 3` and its goal column is `(t - 1) % 3`.
+  - `abs(i // 3 - (t - 1) // 3)` is the row distance. `abs(i % 3 - (t - 1) % 3)` is the column distance.
+  - `sum(...)` adds them up over all tiles.
+
+**`neighbours(s)`: legal moves**
+
+- **L11-12** A generator: it `yield`s each next board one at a time.
+- **L13** `i = s.index(0)` finds the blank.
+- **L14** `divmod(i, 3)` gives the blank's row and column in one step.
+- **L15** The four directions the blank can move: up, down, left, right. Moving the blank is the same as sliding the neighbouring tile into it.
+- **L16** Skips directions that would leave the 3×3 grid.
+- **L17** `j` is the index of the cell the blank moves into.
+- **L18-19** Copies the board into a list, which can be changed, and swaps the blank with that tile.
+- **L20** Turns it back into a tuple and yields it.
+
+**`solvable(s)`: the inversion test**
+
+- **L23-24** Returns `True` if the board can reach the goal.
+- **L25** `tiles` is the 8 tiles in reading order, without the blank.
+- **L26** For every tile `a`, it looks at every tile `b` after it (`tiles[k + 1:]`). `a > b` is `True` for an inversion, and `sum` counts `True` as 1. `% 2 == 0` checks that the count is even.
+
+**`a_star(start)`: the search**
+
+- **L29-30** Returns the list of boards from start to goal, plus how many boards were explored.
+- **L31** `frontier` is the priority queue. Each entry is `(f, g, board)`. Python compares tuples item by item, so the heap orders entries by `f` first. The start entry has `g = 0` and `f = h`.
+- **L32** `parent` records which board each board was reached from. It is used to rebuild the path at the end. The start has no parent.
+- **L33** `g_cost` holds the fewest moves found so far to reach each board.
+- **L34** `expanded` counts how many boards were explored.
+- **L35** Keeps going while there are boards to explore.
+- **L36** Takes the entry with the smallest `f`.
+- **L37-38** **Lazy deletion:** if this entry's `g` is higher than the best known for this board, a cheaper route was found later, so skip it.
+- **L39** If the board is the goal, we're done. Because the heuristic is admissible, this is a shortest path.
+- **L40-43** Rebuilds the path backwards: goal, its parent, that board's parent, and so on. The start's parent is `None`, which is false, so the loop stops there. A board tuple is never empty, so it always counts as true.
+- **L44** `path[::-1]` reverses the list so it runs from start to goal.
+- **L45** Counts this board as explored.
+- **L46** Looks at every board one move away.
+- **L47** Each move costs 1, so the neighbour can be reached in `g + 1` moves. `g_cost.get(n, float('inf'))` is the best known cost to reach `n`, or infinity if `n` hasn't been seen yet. Continue only if this route is **better**.
+- **L48-49** Records the new best cost, and that we came from `s`.
+- **L50** Pushes the neighbour with `f = (g + 1) + h(n)`.
+
+**`show(s)`: print a board**
+
+- **L54** The starting index of each row.
+- **L55** Prints the 3 tiles of the row, with `_` for the blank.
+- **L56** Blank line after the board.
+
+**Self-check**
+
+- **L59** The board `1 2 3 / 4 5 6 / _ 7 8` is 2 moves from solved, so the path must hold 3 boards: the start, 1 move, 2 moves. If the search is ever broken, the program stops here with an `AssertionError`.
+
+**Main program**
+
+- **L61** Reads the board you type.
+- **L62** `int(ch) for ch in text if ch.isdigit()` keeps only the digits, so `1 2 3 0 4 6 7 5 8`, `123046758` and `1,2,3,0,4,6,7,5,8` all work. If you only press Enter, the tuple is empty, which counts as false, so `or` falls back to the default board.
+- **L64-65** A valid board holds each digit 0-8 exactly once. Sorting it must give `[0, 1, ..., 8]`. Anything else (a missing digit, a repeated digit, too many digits) is rejected.
+- **L66-67** Rejects unsolvable boards before searching.
+- **L69** Solves the board.
+- **L70-72** Prints every board on the path, labelled `Start:`, `Move 1:`, `Move 2:` and so on.
+- **L73** The number of moves is one less than the number of boards. Also prints how many boards A\* explored.
+
+Example runs:
+
+```
+Start board ... [1 2 3 0 4 6 7 5 8]:       <- Enter: default board
+Start:
+1 2 3
+_ 4 6
+7 5 8
+...
+Solved in 3 moves, 3 states expanded.
+
+Start board ...: 8 6 7 2 5 4 3 0 1         <- one of the hardest boards
+...
+Solved in 31 moves, 21197 states expanded.
+
+Start board ...: 1 2 3 4 5 6 8 7 0
+This board cannot be solved (odd number of inversions).
+```
+
+31 moves is the most any solvable 8-puzzle board needs. A\* solves that board in about half a second, after exploring 21,197 of the 181,440 reachable boards (about 12%).
+
+---
+
+# 9. Real-data versions — [working/](working/)
 
 Toy data with 6 points is good for understanding, but real data is messier. The [working/](working/) folder runs programs 4-7 on a real, standard dataset, and measures how well each one performs.
 
